@@ -73,12 +73,19 @@ class QueryBuilder<ModelDelegate extends { findMany: Function; count: Function }
 
         const formattedFilters: Record<string, unknown> = {};
 
+        // Helper to convert string booleans to actual booleans
+        const convertValue = (value: unknown): unknown => {
+            if (value === 'true') return true;
+            if (value === 'false') return false;
+            return value;
+        };
+
         const setNestedObject = (obj: Record<string, any>, path: string, value: unknown) => {
             const keys = path.split('.');
             let current = obj;
             keys.forEach((key, index) => {
                 if (index === keys.length - 1) {
-                    current[key] = value;
+                    current[key] = convertValue(value);
                 } else {
                     if (!current[key] || typeof current[key] !== 'object') {
                         current[key] = {};

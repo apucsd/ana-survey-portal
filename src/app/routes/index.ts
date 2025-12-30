@@ -4,6 +4,7 @@ import { AuthRouters } from '../modules/auth/auth.routes';
 import { UserRouters } from '../modules/user/user.routes';
 import { FaqRouters } from '../modules/faq/faq.route';
 import { InfoContentRouters } from '../modules/info-content/info-content.route';
+import { surveyRouters } from '../modules/survey/survey.route';
 
 const router = express.Router();
 
@@ -17,6 +18,10 @@ const moduleRoutes = [
         route: UserRouters,
     },
 
+    {
+        path: '/surveys',
+        route: surveyRouters,
+    },
     {
         path: '/messages',
         route: MessageRouters,

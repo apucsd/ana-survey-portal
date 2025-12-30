@@ -2,9 +2,10 @@ model Survey {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
-  isPublished Boolean  @default(false)
+  status      SurveyStatus @default(UNPUBLISHED)
   endDate     DateTime?
-  estimatedTime String?
+  estimatedTime Int?
+  publishedAt DateTime?
 
   createdBy   String   @db.ObjectId
   creator     User     @relation("SurveyCreator", fields: [createdBy], references: [id])
@@ -19,4 +20,12 @@ model Survey {
 
 
   @@map("surveys")
+}
+
+
+enum SurveyStatus {
+  PUBLISHED
+  UNPUBLISHED
+  DELETED   
+  CLOSED             
 }
