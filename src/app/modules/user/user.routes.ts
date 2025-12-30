@@ -1,0 +1,47 @@
+import express from 'express';
+import auth from '../../middlewares/auth';
+import { parseBody } from '../../middlewares/parseBody';
+import validateRequest from '../../middlewares/validateRequest';
+import { upload } from '../../utils/fileUploader';
+import { UserControllers } from './user.controller';
+import { userValidation } from './user.validation';
+
+const router = express.Router();
+
+router.get('/', auth('SUPERADMIN', 'USER'), UserControllers.getAllUsers);
+router.get('/me', auth('ANY'), UserControllers.getMyProfile);
+router.get('/drivers', auth('ANY'), UserControllers.getDriverUsers);
+router.post(
+    '/assign-vehicle',
+    auth('SUPERADMIN'),
+    validateRequest.body(userValidation.assignVehicleToUser),
+    UserControllers.assignVehicleToUser
+);
+router.get('/:id', auth('ANY'), UserControllers.getUserDetails);
+
+router.put(
+    '/update-profile',
+    auth('ANY'),
+    parseBody,
+    validateRequest.body(userValidation.updateUser),
+    UserControllers.updateMyProfile
+);
+
+router.put('/update-profile-image', auth('ANY'), upload.single('image'), UserControllers.updateProfileImage);
+router.put('/fcm-token', auth('ANY'), UserControllers.updateFcmToken);
+
+router.put(
+    '/user-role/:id',
+    auth('SUPERADMIN'),
+    validateRequest.body(userValidation.updateUserRoleSchema),
+    UserControllers.updateUserRoleStatus
+);
+
+router.put(
+    '/user-status/:id',
+    auth('SUPERADMIN'),
+    validateRequest.body(userValidation.updateUserStatus),
+    UserControllers.updateUserStatus
+);
+
+export const UserRouters = router;

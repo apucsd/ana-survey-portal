@@ -1,0 +1,68 @@
+import cors from 'cors';
+import express, { Application, NextFunction, Request, Response } from 'express';
+import httpStatus from 'http-status';
+import globalErrorHandler from './app/middlewares/globalErrorHandler';
+import router from './app/routes';
+import path from 'path';
+import { StripeWebHook } from './app/utils/StripeUtils';
+import { Morgan } from './app/shared/morgan';
+import rateLimiter from './app/middlewares/rateLimiter';
+const app: Application = express();
+
+app.post('/api/v1/webhook', express.raw({ type: 'application/json' }), StripeWebHook);
+app.use(rateLimiter);
+
+app.use(
+    cors({
+        origin: [
+            'http://localhost:3001',
+            'http://localhost:3000',
+            'http://localhost:5173',
+            'http://23.239.111.164:3012',
+            'http://23.239.111.164:3011',
+        ],
+        credentials: true,
+    })
+);
+//  ============ LOGGER MIDDLEWARE ============
+app.use(Morgan.errorHandler);
+app.use(Morgan.successHandler);
+
+//  ============ PARSER MIDDLEWARE ============
+app.use(express.json());
+app.use(express.json({ limit: '500mb' }));
+app.use(express.urlencoded({ limit: '500mb', extended: true }));
+
+//  ============ ROUTER MIDDLEWARE ============
+app.get('/', (req: Request, res: Response) => {
+    res.json({
+        status: 'running',
+        message: 'Ana Survey Portal server is active and operational.',
+        developer: {
+            name: 'Apu Sutra Dhar',
+            role: 'MERN Stack Developer / Backend Developer',
+            location: 'Bangladesh',
+            portfolio: 'https://apusutradhar.vercel.app/',
+        },
+
+        timestamp: new Date().toISOString(),
+    });
+});
+
+app.use('/api/v1', router);
+
+//  ============ ERROR MIDDLEWARE ============
+app.use(globalErrorHandler);
+app.use('/upload', express.static(path.join(__dirname, 'app', 'upload')));
+app.use((req: Request, res: Response, next: NextFunction) => {
+    res.status(httpStatus.NOT_FOUND).json({
+        success: false,
+        message: 'API NOT FOUND!',
+        error: {
+            path: req.originalUrl,
+            message: 'Your requested path is not found!',
+        },
+    });
+});
+
+export default app;
