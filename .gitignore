@@ -7,4 +7,4 @@ dist
 .env
 winston
 
-src/app/utils/firebase-service-account.json
+firebase-service-account.json
