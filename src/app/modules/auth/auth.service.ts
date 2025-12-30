@@ -121,25 +121,6 @@ const registerUserIntoDB = async (payload: User) => {
     } catch (error) {
         console.error('Failed to send verification OTP:', error);
     }
-
-    //  ============= CREATING ADMIN NOTIFICATION =============
-    const adminUser = await prisma.user.findFirst({
-        where: {
-            role: 'SUPERADMIN',
-        },
-    });
-
-    //  ============= CREATING ADMIN NOTIFICATION =============
-    if (adminUser) {
-        const notificationForAdmin = await prisma.notification.create({
-            data: {
-                message: `New user registered: ${payload.name}`,
-                type: 'USER_REGISTRATION',
-                recipientId: adminUser.id,
-            },
-        });
-        sendEventToUser(`notification::${adminUser.id}`, notificationForAdmin);
-    }
 };
 const registerDriverIntoDB = async (payload: any) => {
     const hashedPassword: string = await bcrypt.hash(payload.password, 10);

@@ -10,13 +10,7 @@ const router = express.Router();
 
 router.get('/', auth('SUPERADMIN', 'USER'), UserControllers.getAllUsers);
 router.get('/me', auth('ANY'), UserControllers.getMyProfile);
-router.get('/drivers', auth('ANY'), UserControllers.getDriverUsers);
-router.post(
-    '/assign-vehicle',
-    auth('SUPERADMIN'),
-    validateRequest.body(userValidation.assignVehicleToUser),
-    UserControllers.assignVehicleToUser
-);
+
 router.get('/:id', auth('ANY'), UserControllers.getUserDetails);
 
 router.put(
@@ -27,7 +21,6 @@ router.put(
     UserControllers.updateMyProfile
 );
 
-router.put('/update-profile-image', auth('ANY'), upload.single('image'), UserControllers.updateProfileImage);
 router.put('/fcm-token', auth('ANY'), UserControllers.updateFcmToken);
 
 router.put(

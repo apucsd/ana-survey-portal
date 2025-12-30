@@ -5,10 +5,12 @@ const updateUser = z.object({
     body: z
         .object({
             name: z.string().optional(),
-            phoneNumber: z.string().optional(),
+            phone: z.string().optional(),
             bio: z.string().optional(),
             location: z.string().optional(),
             profile: z.string().optional(),
+            nationality: z.string().optional(),
+            dateOfBirth: z.string().optional(),
         })
         .strict(),
 });

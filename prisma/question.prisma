@@ -1,0 +1,21 @@
+model Question {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  surveyId  String   @db.ObjectId
+  survey    Survey   @relation("SurveyQuestions", fields: [surveyId], references: [id])
+
+  type      String   // text | textarea | mcq_single | mcq_multi | rating | yes_no | date | number | email | file | dropdown | matrix
+  title     String
+  required  Boolean  @default(false)
+  order     Int
+
+  config    Json     // options, scale, min/max, etc.
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  answers   Answer[] @relation("QuestionAnswers")
+
+  @@index([surveyId])
+
+  @@map("questions")
+}

@@ -2,21 +2,22 @@ model User {
   id          String       @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   email       String       @unique
-  phoneNumber String?
+  phone String?
   password    String
   dateOfBirth DateTime?
+  nationality String?
+  bio              String?
+  location         String?
   role        UserRoleEnum @default(USER)
 
   status UserStatus @default(ACTIVE)
-  driverWorkStatus DriverWorkStatus @default(IDLE)
   fcmToken String?
 
-  bio              String?
-  location         String?
+
   stripeCustomerId String?
 
   isAgreeWithTerms Boolean
-  profile          String?   @default("https://i.pinimg.com/736x/01/4e/f2/014ef2f860e8e56b27d4a3267e0a193a.jpg")
+  profile          String?   @default("https://i.ibb.co.com/zWpK4WMm/avater.png")
   otp              String?
   otpExpiry        DateTime?
 
@@ -27,9 +28,12 @@ model User {
   createdAt                     DateTime  @default(now())
   updatedAt                     DateTime  @updatedAt
 
+//  =========== All RELATION HERE ===========
+
+  surveys           Survey[]        @relation("SurveyCreator")
   messages          Message[]       @relation("UserMessages")
 
-  
+  responses         Response[]      @relation("UserResponses")
 
 
   @@map("users")
@@ -45,9 +49,4 @@ enum UserStatus {
   ACTIVE
   INACTIVE
   BLOCKED
-}
-
-enum DriverWorkStatus {
-  IDLE
-  BUSY
 }

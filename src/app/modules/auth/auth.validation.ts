@@ -33,6 +33,15 @@ const registerUser = z.object({
         password: z.string({
             required_error: 'Password is required!',
         }),
+
+        dateOfBirth: z
+            .string({
+                required_error: 'Date of Birth is required!',
+            })
+            .datetime(),
+        nationality: z.string({
+            required_error: 'Nationality is required!',
+        }),
     }),
 });
 const registerDriver = z.object({

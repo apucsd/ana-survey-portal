@@ -1,0 +1,17 @@
+model Response {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  surveyId  String   @db.ObjectId
+  survey    Survey   @relation("SurveyResponses", fields: [surveyId], references: [id])
+
+  userId    String?  @db.ObjectId
+  user      User?    @relation("UserResponses", fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  answers   Answer[] @relation("ResponseAnswers")
+
+  @@index([surveyId])
+  @@index([userId])
+
+  @@map("responses")
+}

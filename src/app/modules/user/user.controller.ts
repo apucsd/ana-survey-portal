@@ -26,16 +26,6 @@ const getAllUsers = catchAsync(async (req, res) => {
     });
 });
 
-const getDriverUsers = catchAsync(async (req, res) => {
-    const result = await UserServices.getDriverUsersFromDB(req.query);
-
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        message: 'Driver users retrieved successfully',
-        ...result,
-    });
-});
-
 const getMyProfile = catchAsync(async (req, res) => {
     const id = req.user.id;
     const result = await UserServices.getMyProfileFromDB(id);
@@ -73,20 +63,6 @@ const updateMyProfile = catchAsync(async (req: Request, res) => {
     });
 });
 
-// Update profile image
-const updateProfileImage = catchAsync(async (req: Request, res) => {
-    const id = req.user.id;
-    const file = req.file;
-
-    const result = await UserServices.updateProfileImg(id, file as Express.Multer.File);
-
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        message: 'Profile image updated successfully',
-        data: result,
-    });
-});
-
 const updateUserRoleStatus = catchAsync(async (req, res) => {
     const { id } = req.params;
     const role = req.body.role;
@@ -111,26 +87,12 @@ const updateUserStatus = catchAsync(async (req, res) => {
     });
 });
 
-const assignVehicleToUser = catchAsync(async (req, res) => {
-    const { userId, vehicleId } = req.body;
-    const result = await UserServices.assignVehicleToUser(userId, vehicleId);
-
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        message: 'Vehicle assigned to user successfully',
-        data: result,
-    });
-});
-
 export const UserControllers = {
     getAllUsers,
     getMyProfile,
     getUserDetails,
     updateMyProfile,
-    updateProfileImage,
     updateUserRoleStatus,
     updateUserStatus,
-    getDriverUsers,
-    assignVehicleToUser,
     updateFcmToken,
 };
