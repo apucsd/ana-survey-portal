@@ -3,9 +3,9 @@ model Question {
   surveyId  String   @db.ObjectId
   survey    Survey   @relation("SurveyQuestions", fields: [surveyId], references: [id])
 
-  type      String   // text | textarea | mcq_single | mcq_multi | rating | yes_no | date | number | email | file | dropdown | matrix
+  type      String   
   title     String
-  required  Boolean  @default(false)
+  required  Boolean  @default(false)  // Whether the question is required or not
   order     Int
 
   config    Json     // options, scale, min/max, etc.

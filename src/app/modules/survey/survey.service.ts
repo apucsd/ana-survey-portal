@@ -109,6 +109,12 @@ const getSingleSurveyForAdminFromDB = async (id: string) => {
         where: {
             id,
         },
+        include: {
+            // creator: true,
+            questions: {
+                orderBy: { order: 'asc' },
+            },
+        },
     });
     return result;
 };
