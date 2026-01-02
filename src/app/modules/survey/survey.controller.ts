@@ -65,9 +65,17 @@ const getAllSurveysForAdmin = catchAsync(async (req, res) => {
         meta,
     });
 });
-
 const getSingleSurveyForAdmin = catchAsync(async (req, res) => {
     const result = await SurveyService.getSingleSurveyForAdminFromDB(req.params.id);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Survey fetched successfully',
+        data: result,
+    });
+});
+const getSingleSurveyForUser = catchAsync(async (req, res) => {
+    const result = await SurveyService.getSingleSurveyForUserFromDB(req.params.id);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
@@ -94,4 +102,5 @@ export const SurveyController = {
     getSingleSurveyForAdmin,
     deleteSurvey,
     getPublishedSurveysForUser,
+    getSingleSurveyForUser,
 };

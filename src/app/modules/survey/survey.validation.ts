@@ -21,7 +21,10 @@ const createSurveyZodSchema = z.object({
             }),
     }),
 });
-
+const updateSurveyZodSchema = z.object({
+    body: createSurveyZodSchema.shape.body.partial().optional(),
+});
 export const SurveyValidation = {
     createSurveyZodSchema,
+    updateSurveyZodSchema,
 };

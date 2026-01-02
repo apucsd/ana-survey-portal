@@ -14,4 +14,13 @@ router.post(
     QuestionController.createQuestion
 );
 
+router.patch(
+    '/:id',
+    auth(UserRoleEnum.SUPERADMIN),
+    validateRequest.body(QuestionValidation.updateQuestionZodSchema),
+    QuestionController.updateQuestion
+);
+
+router.delete('/:id', auth(UserRoleEnum.SUPERADMIN), QuestionController.deleteQuestion);
+
 export const QuestionRouters = router;

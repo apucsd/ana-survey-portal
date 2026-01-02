@@ -35,6 +35,11 @@ const createQuestionZodSchema = z.object({
     }),
 });
 
+const updateQuestionZodSchema = z.object({
+    body: createQuestionZodSchema.shape.body.partial(),
+});
+
 export const QuestionValidation = {
     createQuestionZodSchema,
+    updateQuestionZodSchema,
 };

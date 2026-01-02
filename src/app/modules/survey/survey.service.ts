@@ -1,4 +1,4 @@
-import { Survey, SurveyStatus } from '@prisma/client';
+import { QuestionStatus, Survey, SurveyStatus } from '@prisma/client';
 import { prisma } from '../../utils/prisma';
 import QueryBuilder from '../../builder/QueryBuilder';
 import AppError from '../../errors/AppError';
@@ -88,8 +88,35 @@ const getPublishedSurveysForUserFromDB = async (query: Record<string, any>) => {
         .paginate()
         .fields()
         .exclude()
+        .customFields({
+            id: true,
+            title: true,
+            description: true,
+            createdAt: true,
+            updatedAt: true,
+            publishedAt: true,
+            endDate: true,
+            status: true,
+            _count: {
+                select: {
+                    responses: true,
+                },
+            },
+        })
         .execute();
-    return result;
+
+    const transformedData = {
+        ...result,
+        data: result?.data?.map((survey: any) => {
+            const { _count, ...rest } = survey;
+            return {
+                ...rest,
+                totalParticipants: _count?.responses || 0,
+            };
+        }),
+    };
+
+    return transformedData;
 };
 
 const getAllSurveysForAdminFromDB = async (query: Record<string, any>) => {
@@ -113,9 +140,28 @@ const getSingleSurveyForAdminFromDB = async (id: string) => {
             // creator: true,
             questions: {
                 orderBy: { order: 'asc' },
+                where: {
+                    status: QuestionStatus.ACTIVE,
+                },
             },
         },
     });
+    return result;
+};
+const getSingleSurveyForUserFromDB = async (id: string) => {
+    const result = await prisma.survey.findUnique({
+        where: {
+            id,
+            status: SurveyStatus.PUBLISHED,
+        },
+        include: {
+            // creator: true,
+            questions: {
+                orderBy: { order: 'asc' },
+            },
+        },
+    });
+    if (!result) throw new AppError(httpStatus.NOT_FOUND, 'Survey not found');
     return result;
 };
 const deleteSurveyIntoDB = async (id: string, userId: string) => {
@@ -152,4 +198,5 @@ export const SurveyService = {
     deleteSurveyIntoDB,
     publishSurveyIntoDB,
     closeSurveyIntoDB,
+    getSingleSurveyForUserFromDB,
 };

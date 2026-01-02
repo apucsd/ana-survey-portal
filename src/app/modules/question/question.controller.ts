@@ -13,6 +13,28 @@ const createQuestion = catchAsync(async (req, res) => {
     });
 });
 
+const updateQuestion = catchAsync(async (req, res) => {
+    const result = await QuestionService.updateQuestionIntoDB(req.user.id, req.params.id, req.body);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Question updated successfully',
+        data: result,
+    });
+});
+
+const deleteQuestion = catchAsync(async (req, res) => {
+    const result = await QuestionService.deleteQuestionIntoDB(req.user.id, req.params.id);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Question deleted successfully',
+        data: result,
+    });
+});
+
 export const QuestionController = {
     createQuestion,
+    updateQuestion,
+    deleteQuestion,
 };

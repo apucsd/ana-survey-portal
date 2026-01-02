@@ -14,9 +14,16 @@ router.post(
     SurveyController.createSurvey
 );
 router.get('/', auth(UserRoleEnum.USER), SurveyController.getPublishedSurveysForUser);
+
 router.get('/admin', auth(UserRoleEnum.SUPERADMIN), SurveyController.getAllSurveysForAdmin);
+router.get('/:id', auth(UserRoleEnum.USER), SurveyController.getSingleSurveyForUser);
 router.get('/admin/:id', auth(UserRoleEnum.SUPERADMIN), SurveyController.getSingleSurveyForAdmin);
-router.patch('/admin/:id', auth(UserRoleEnum.SUPERADMIN), SurveyController.updateSurvey);
+router.patch(
+    '/admin/:id',
+    auth(UserRoleEnum.SUPERADMIN),
+    validateRequest.body(SurveyValidation.updateSurveyZodSchema),
+    SurveyController.updateSurvey
+);
 router.delete('/admin/:id', auth(UserRoleEnum.SUPERADMIN), SurveyController.deleteSurvey);
 router.patch('/admin/publish/:id', auth(UserRoleEnum.SUPERADMIN), SurveyController.publishSurvey);
 router.patch('/admin/close/:id', auth(UserRoleEnum.SUPERADMIN), SurveyController.closeSurvey);

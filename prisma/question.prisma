@@ -12,10 +12,16 @@ model Question {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  status    QuestionStatus @default(ACTIVE)
 
   answers   Answer[] @relation("QuestionAnswers")
 
   @@index([surveyId])
 
   @@map("questions")
+}
+
+enum QuestionStatus {
+  ACTIVE
+  DELETED
 }
