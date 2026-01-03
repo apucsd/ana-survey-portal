@@ -41,7 +41,6 @@ model User {
 
 enum UserRoleEnum {
   USER
-  DRIVER
   SUPERADMIN
 }
 

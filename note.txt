@@ -1,0 +1,10 @@
+Ana Survey App
+
+
+steps:
+1. Create survey
+2. Add questions to survey
+3. User response (validate each questions type)
+4. store answers
+5. Generate report
+6. Share report
