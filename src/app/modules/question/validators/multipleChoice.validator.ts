@@ -1,10 +1,11 @@
 import { z } from 'zod';
 
 /**
- * Multi Choice Question Validator (Checkboxes)
+ * Multiple Choice Question Validator (Checkboxes)
+ * Type: multiple_choice
  */
 
-export const MultiChoiceConfigSchema = z.object({
+export const MultipleChoiceConfigSchema = z.object({
     options: z
         .array(
             z.union([
@@ -15,17 +16,17 @@ export const MultiChoiceConfigSchema = z.object({
                 }),
             ])
         )
-        .min(2, 'Multi choice must have at least 2 options'),
+        .min(2, 'Multiple choice must have at least 2 options'),
     minSelections: z.number().int().nonnegative().optional(),
     maxSelections: z.number().int().positive().optional(),
     allowOther: z.boolean().optional().default(false),
 });
 
-export const MultiChoiceQuestionSchema = z.object({
+export const MultipleChoiceQuestionSchema = z.object({
     surveyId: z.string().min(1, 'Survey ID is required'),
     title: z.string().min(1, 'Question title is required'),
-    type: z.literal('multi-choice'),
+    type: z.literal('multiple_choice'),
     required: z.boolean().default(false),
     order: z.number().int().nonnegative(),
-    config: MultiChoiceConfigSchema,
+    config: MultipleChoiceConfigSchema,
 });

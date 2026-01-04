@@ -1,31 +1,18 @@
 export type QuestionType =
-    | 'text'
+    | 'single_choice'
+    | 'multiple_choice'
     | 'textarea'
-    | 'email'
-    | 'number'
-    | 'rating'
-    | 'single-choice'
-    | 'multi-choice'
-    | 'date'
-    | 'boolean';
+    | 'rating_star'
+    | 'rating_scale'
+    | 'boolean'
+    | 'order_rank';
 
-export interface TextConfig {
+// ============ CONFIG TYPES FOR EACH QUESTION TYPE ============
+
+export interface TextareaConfig {
     placeholder?: string;
     maxLength?: number;
     minLength?: number;
-}
-
-export interface NumberConfig {
-    min?: number;
-    max?: number;
-    step?: number;
-    placeholder?: string;
-}
-
-export interface RatingConfig {
-    min: number;
-    max: number;
-    step: number;
 }
 
 export type ChoiceOption =
@@ -40,22 +27,37 @@ export interface SingleChoiceConfig {
     allowOther?: boolean;
 }
 
-export interface MultiChoiceConfig {
+export interface MultipleChoiceConfig {
     options: ChoiceOption[]; // minimum 2 options
     minSelections?: number;
     maxSelections?: number;
     allowOther?: boolean;
 }
 
-export interface DateConfig {
-    minDate?: string; // ISO date string
-    maxDate?: string; // ISO date string
-    format?: string; // default: 'YYYY-MM-DD'
+export interface RatingStarConfig {
+    min: number; // default: 1
+    max: number; // default: 5
+    step: number; // default: 1
+}
+
+export interface RatingScaleConfig {
+    min: number; // default: 0
+    max: number; // default: 10
+    step: number; // default: 1
+    labels?: {
+        min?: string;
+        max?: string;
+    };
 }
 
 export interface BooleanConfig {
     trueLabel?: string; // default: 'Yes'
     falseLabel?: string; // default: 'No'
+}
+
+export interface OrderRankConfig {
+    items: ChoiceOption[]; // minimum 2 items
+    maxRankable?: number;
 }
 
 // ============ QUESTION INTERFACE ============
@@ -72,34 +74,29 @@ export interface BaseQuestion {
     updatedAt?: Date;
 }
 
-export interface TextQuestion extends BaseQuestion {
-    type: 'text' | 'textarea' | 'email';
-    config: TextConfig;
-}
-
-export interface NumberQuestion extends BaseQuestion {
-    type: 'number';
-    config: NumberConfig;
-}
-
-export interface RatingQuestion extends BaseQuestion {
-    type: 'rating';
-    config: RatingConfig;
+export interface TextareaQuestion extends BaseQuestion {
+    type: 'textarea';
+    config: TextareaConfig;
 }
 
 export interface SingleChoiceQuestion extends BaseQuestion {
-    type: 'single-choice';
+    type: 'single_choice';
     config: SingleChoiceConfig;
 }
 
-export interface MultiChoiceQuestion extends BaseQuestion {
-    type: 'multi-choice';
-    config: MultiChoiceConfig;
+export interface MultipleChoiceQuestion extends BaseQuestion {
+    type: 'multiple_choice';
+    config: MultipleChoiceConfig;
 }
 
-export interface DateQuestion extends BaseQuestion {
-    type: 'date';
-    config: DateConfig;
+export interface RatingStarQuestion extends BaseQuestion {
+    type: 'rating_star';
+    config: RatingStarConfig;
+}
+
+export interface RatingScaleQuestion extends BaseQuestion {
+    type: 'rating_scale';
+    config: RatingScaleConfig;
 }
 
 export interface BooleanQuestion extends BaseQuestion {
@@ -107,22 +104,27 @@ export interface BooleanQuestion extends BaseQuestion {
     config: BooleanConfig;
 }
 
+export interface OrderRankQuestion extends BaseQuestion {
+    type: 'order_rank';
+    config: OrderRankConfig;
+}
+
 export type Question =
-    | TextQuestion
-    | NumberQuestion
-    | RatingQuestion
+    | TextareaQuestion
     | SingleChoiceQuestion
-    | MultiChoiceQuestion
-    | DateQuestion
-    | BooleanQuestion;
+    | MultipleChoiceQuestion
+    | RatingStarQuestion
+    | RatingScaleQuestion
+    | BooleanQuestion
+    | OrderRankQuestion;
 
 // ============ ANSWER TYPES ============
 
 export type AnswerValue =
-    | string // text, textarea, email, date, single-choice
-    | number // number, rating
+    | string // textarea, single_choice, rating_star (stored as number but handled as value), rating_scale
+    | number // rating_star, rating_scale
     | boolean // boolean
-    | string[]; // multi-choice
+    | string[]; // multiple_choice, order_rank
 
 export interface Answer {
     id?: string;
@@ -151,96 +153,76 @@ export interface CreateQuestionPayload {
     required: boolean;
     order: number;
     config:
-        | TextConfig
-        | NumberConfig
-        | RatingConfig
+        | TextareaConfig
         | SingleChoiceConfig
-        | MultiChoiceConfig
-        | DateConfig
-        | BooleanConfig;
+        | MultipleChoiceConfig
+        | RatingStarConfig
+        | RatingScaleConfig
+        | BooleanConfig
+        | OrderRankConfig;
 }
 
 export interface UpdateQuestionPayload {
     title?: string;
     required?: boolean;
     order?: number;
-    config?:
-        | TextConfig
-        | NumberConfig
-        | RatingConfig
-        | SingleChoiceConfig
-        | MultiChoiceConfig
-        | DateConfig
-        | BooleanConfig;
-}
-
-export interface CreateResponsePayload {
-    surveyId: string;
-    userId?: string;
-    answers: Array<{
-        questionId: string;
-        value: AnswerValue;
-    }>;
+    config?: any; // Partial<Config>
 }
 
 // ============ HELPER TYPE GUARDS ============
 
-export function isTextQuestion(question: Question): question is TextQuestion {
-    return ['text', 'textarea', 'email'].includes(question.type);
-}
-
-export function isNumberQuestion(question: Question): question is NumberQuestion {
-    return question.type === 'number';
-}
-
-export function isRatingQuestion(question: Question): question is RatingQuestion {
-    return question.type === 'rating';
+export function isTextareaQuestion(question: Question): question is TextareaQuestion {
+    return question.type === 'textarea';
 }
 
 export function isSingleChoiceQuestion(question: Question): question is SingleChoiceQuestion {
-    return question.type === 'single-choice';
+    return question.type === 'single_choice';
 }
 
-export function isMultiChoiceQuestion(question: Question): question is MultiChoiceQuestion {
-    return question.type === 'multi-choice';
+export function isMultipleChoiceQuestion(question: Question): question is MultipleChoiceQuestion {
+    return question.type === 'multiple_choice';
 }
 
-export function isDateQuestion(question: Question): question is DateQuestion {
-    return question.type === 'date';
+export function isRatingStarQuestion(question: Question): question is RatingStarQuestion {
+    return question.type === 'rating_star';
+}
+
+export function isRatingScaleQuestion(question: Question): question is RatingScaleQuestion {
+    return question.type === 'rating_scale';
 }
 
 export function isBooleanQuestion(question: Question): question is BooleanQuestion {
     return question.type === 'boolean';
 }
 
+export function isOrderRankQuestion(question: Question): question is OrderRankQuestion {
+    return question.type === 'order_rank';
+}
+
 // ============ VALIDATION HELPERS ============
 
 export function getQuestionTypeLabel(type: QuestionType): string {
     const labels: Record<QuestionType, string> = {
-        text: 'Short Text',
         textarea: 'Long Text',
-        email: 'Email Address',
-        number: 'Number',
-        rating: 'Rating',
-        'single-choice': 'Single Choice (Radio)',
-        'multi-choice': 'Multiple Choice (Checkbox)',
-        date: 'Date',
+        single_choice: 'Single Choice',
+        multiple_choice: 'Multiple Choice',
+        rating_star: 'Star Rating',
+        rating_scale: 'Scale Rating',
         boolean: 'Yes/No',
+        order_rank: 'Ranking',
     };
     return labels[type];
 }
 
 export function getDefaultConfig(type: QuestionType): any {
     const defaults: Record<QuestionType, any> = {
-        text: { placeholder: '', maxLength: 500 },
         textarea: { placeholder: '', maxLength: 2000 },
-        email: { placeholder: 'you@example.com' },
-        number: { min: 0, max: 100, step: 1 },
-        rating: { min: 1, max: 5, step: 1 },
-        'single-choice': { options: ['Option 1', 'Option 2'], allowOther: false },
-        'multi-choice': { options: ['Option 1', 'Option 2'], allowOther: false },
-        date: { format: 'YYYY-MM-DD' },
+        single_choice: { options: ['Option 1', 'Option 2'], allowOther: false },
+        multiple_choice: { options: ['Option 1', 'Option 2'], allowOther: false },
+        rating_star: { min: 1, max: 5, step: 1 },
+        rating_scale: { min: 0, max: 10, step: 1, labels: { min: 'Not Likely', max: 'Very Likely' } },
         boolean: { trueLabel: 'Yes', falseLabel: 'No' },
+        order_rank: { items: ['Item 1', 'Item 2', 'Item 3'] },
     };
     return defaults[type];
 }

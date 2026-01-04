@@ -1,7 +1,8 @@
 import { z } from 'zod';
 
 /**
- * Single Choice Question Validator (MCQ - Radio Buttons)
+ * Single Choice Question Validator (Radio Buttons)
+ * Type: single_choice
  */
 
 export const SingleChoiceConfigSchema = z.object({
@@ -22,7 +23,7 @@ export const SingleChoiceConfigSchema = z.object({
 export const SingleChoiceQuestionSchema = z.object({
     surveyId: z.string().min(1, 'Survey ID is required'),
     title: z.string().min(1, 'Question title is required'),
-    type: z.literal('single-choice'),
+    type: z.literal('single_choice'),
     required: z.boolean().default(false),
     order: z.number().int().nonnegative(),
     config: SingleChoiceConfigSchema,

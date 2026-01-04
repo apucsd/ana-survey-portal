@@ -6,43 +6,15 @@ Copy and paste these JSON examples to create questions.
 
 ---
 
-## 1️⃣ TEXT QUESTION
-
-```json
-{
-    "surveyId": "YOUR_SURVEY_ID",
-    "title": "What is your full name?",
-    "type": "text",
-    "required": true,
-    "order": 1,
-    "config": {
-        "placeholder": "Enter your full name",
-        "maxLength": 100,
-        "minLength": 2
-    }
-}
-```
-
-**Response:**
-
-```json
-{
-    "questionId": "...",
-    "value": "John Doe"
-}
-```
-
----
-
-## 2️⃣ SINGLE CHOICE (MCQ - Radio Buttons)
+## 1️⃣ SINGLE CHOICE (Radio Buttons)
 
 ```json
 {
     "surveyId": "YOUR_SURVEY_ID",
     "title": "What is your favorite color?",
-    "type": "single-choice",
+    "type": "single_choice",
     "required": true,
-    "order": 2,
+    "order": 1,
     "config": {
         "options": ["Red", "Blue", "Green", "Yellow"],
         "allowOther": false
@@ -61,15 +33,15 @@ Copy and paste these JSON examples to create questions.
 
 ---
 
-## 3️⃣ MULTI CHOICE (Checkboxes)
+## 2️⃣ MULTIPLE CHOICE (Checkboxes)
 
 ```json
 {
     "surveyId": "YOUR_SURVEY_ID",
     "title": "Which programming languages do you know?",
-    "type": "multi-choice",
+    "type": "multiple_choice",
     "required": false,
-    "order": 3,
+    "order": 2,
     "config": {
         "options": ["JavaScript", "Python", "Java", "C#"],
         "minSelections": 1,
@@ -90,20 +62,19 @@ Copy and paste these JSON examples to create questions.
 
 ---
 
-## 4️⃣ NUMBER QUESTION
+## 3️⃣ TEXTAREA (Long Text)
 
 ```json
 {
     "surveyId": "YOUR_SURVEY_ID",
-    "title": "What is your age?",
-    "type": "number",
+    "title": "Please describe your experience",
+    "type": "textarea",
     "required": true,
-    "order": 4,
+    "order": 3,
     "config": {
-        "min": 18,
-        "max": 100,
-        "step": 1,
-        "placeholder": "Enter your age"
+        "placeholder": "Enter your answer here...",
+        "maxLength": 2000,
+        "minLength": 10
     }
 }
 ```
@@ -113,25 +84,24 @@ Copy and paste these JSON examples to create questions.
 ```json
 {
     "questionId": "...",
-    "value": 25
+    "value": "This is a detailed response..."
 }
 ```
 
 ---
 
-## 5️⃣ RATING QUESTION
+## 4️⃣ RATING STAR (1-5 Stars)
 
 ```json
 {
     "surveyId": "YOUR_SURVEY_ID",
-    "title": "How satisfied are you with our service?",
-    "type": "rating",
+    "title": "How satisfied are you?",
+    "type": "rating_star",
     "required": true,
-    "order": 5,
+    "order": 4,
     "config": {
         "min": 1,
-        "max": 5,
-        "step": 1
+        "max": 5
     }
 }
 ```
@@ -147,19 +117,22 @@ Copy and paste these JSON examples to create questions.
 
 ---
 
-## 6️⃣ DATE QUESTION
+## 5️⃣ RATING SCALE (0-10 Scale)
 
 ```json
 {
     "surveyId": "YOUR_SURVEY_ID",
-    "title": "When did you start your current job?",
-    "type": "date",
-    "required": false,
-    "order": 6,
+    "title": "How likely are you to recommend us?",
+    "type": "rating_scale",
+    "required": true,
+    "order": 5,
     "config": {
-        "minDate": "2000-01-01",
-        "maxDate": "2026-12-31",
-        "format": "YYYY-MM-DD"
+        "min": 0,
+        "max": 10,
+        "labels": {
+            "min": "Not Likely",
+            "max": "Very Likely"
+        }
     }
 }
 ```
@@ -169,24 +142,24 @@ Copy and paste these JSON examples to create questions.
 ```json
 {
     "questionId": "...",
-    "value": "2020-03-15"
+    "value": 9
 }
 ```
 
 ---
 
-## 7️⃣ BOOLEAN QUESTION
+## 6️⃣ BOOLEAN (Yes/No)
 
 ```json
 {
     "surveyId": "YOUR_SURVEY_ID",
-    "title": "Would you recommend our service?",
+    "title": "Do you agree to terms?",
     "type": "boolean",
     "required": true,
-    "order": 7,
+    "order": 6,
     "config": {
-        "trueLabel": "Yes, definitely",
-        "falseLabel": "No, probably not"
+        "trueLabel": "Yes, I agree",
+        "falseLabel": "No, I disagree"
     }
 }
 ```
@@ -202,6 +175,33 @@ Copy and paste these JSON examples to create questions.
 
 ---
 
+## 7️⃣ ORDER RANK (Drag and Drop)
+
+```json
+{
+    "surveyId": "YOUR_SURVEY_ID",
+    "title": "Rank these features in order of importance",
+    "type": "order_rank",
+    "required": true,
+    "order": 7,
+    "config": {
+        "items": ["Speed", "Reliability", "Cost", "Support"],
+        "maxRankable": 3
+    }
+}
+```
+
+**Response:**
+
+```json
+{
+    "questionId": "...",
+    "value": ["Reliability", "Cost", "Speed"]
+}
+```
+
+---
+
 ## 📤 SUBMIT RESPONSE
 
 ```json
@@ -210,32 +210,32 @@ Copy and paste these JSON examples to create questions.
     "userId": "YOUR_USER_ID",
     "answers": [
         {
-            "questionId": "text_q_id",
-            "value": "John Doe"
-        },
-        {
-            "questionId": "single_choice_q_id",
+            "questionId": "q1_id",
             "value": "Blue"
         },
         {
-            "questionId": "multi_choice_q_id",
-            "value": ["JavaScript", "Python"]
+            "questionId": "q2_id",
+            "value": ["JavaScript"]
         },
         {
-            "questionId": "number_q_id",
-            "value": 25
+            "questionId": "q3_id",
+            "value": "My experience was great..."
         },
         {
-            "questionId": "rating_q_id",
+            "questionId": "q4_id",
             "value": 5
         },
         {
-            "questionId": "date_q_id",
-            "value": "2020-03-15"
+            "questionId": "q5_id",
+            "value": 9
         },
         {
-            "questionId": "boolean_q_id",
+            "questionId": "q6_id",
             "value": true
+        },
+        {
+            "questionId": "q7_id",
+            "value": ["Reliability", "Cost", "Speed"]
         }
     ]
 }
@@ -245,14 +245,12 @@ Copy and paste these JSON examples to create questions.
 
 ## 📊 Response Value Types
 
-| Question Type | Value Type | Example                    |
-| ------------- | ---------- | -------------------------- |
-| text          | `string`   | `"John Doe"`               |
-| textarea      | `string`   | `"Long text..."`           |
-| email         | `string`   | `"user@example.com"`       |
-| number        | `number`   | `25`                       |
-| rating        | `number`   | `5`                        |
-| single-choice | `string`   | `"Blue"`                   |
-| multi-choice  | `string[]` | `["JavaScript", "Python"]` |
-| date          | `string`   | `"2020-03-15"`             |
-| boolean       | `boolean`  | `true`                     |
+| Question Type   | Value Type | Example           |
+| --------------- | ---------- | ----------------- |
+| single_choice   | `string`   | `"Blue"`          |
+| multiple_choice | `string[]` | `["A", "B"]`      |
+| textarea        | `string`   | `"Text..."`       |
+| rating_star     | `number`   | `5`               |
+| rating_scale    | `number`   | `8`               |
+| boolean         | `boolean`  | `true`            |
+| order_rank      | `string[]` | `["A", "C", "B"]` |

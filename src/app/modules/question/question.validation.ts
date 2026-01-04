@@ -1,46 +1,34 @@
 import { z } from 'zod';
-
-// Import all modular validators
-import {
-    TextQuestionSchema,
-    TextareaQuestionSchema,
-    EmailQuestionSchema,
-    TextConfigSchema,
-} from './validators/text.validator';
+import { TextareaQuestionSchema, TextareaConfigSchema } from './validators/textarea.validator';
 import { SingleChoiceQuestionSchema, SingleChoiceConfigSchema } from './validators/singleChoice.validator';
-import { MultiChoiceQuestionSchema, MultiChoiceConfigSchema } from './validators/multiChoice.validator';
-import { NumberQuestionSchema, NumberConfigSchema } from './validators/number.validator';
-import { RatingQuestionSchema, RatingConfigSchema } from './validators/rating.validator';
-import { DateQuestionSchema, DateConfigSchema } from './validators/date.validator';
+import { MultipleChoiceQuestionSchema, MultipleChoiceConfigSchema } from './validators/multipleChoice.validator';
+import { RatingStarQuestionSchema, RatingStarConfigSchema } from './validators/ratingStar.validator';
+import { RatingScaleQuestionSchema, RatingScaleConfigSchema } from './validators/ratingScale.validator';
 import { BooleanQuestionSchema, BooleanConfigSchema } from './validators/boolean.validator';
+import { OrderRankQuestionSchema, OrderRankConfigSchema } from './validators/orderRank.validator';
 
 // ============ QUESTION TYPE ENUM ============
 export const QuestionTypeEnum = z.enum([
-    'text',
+    'single_choice',
+    'multiple_choice',
     'textarea',
-    'email',
-    'number',
-    'rating',
-    'single-choice',
-    'multi-choice',
-    'date',
+    'rating_star',
+    'rating_scale',
     'boolean',
+    'order_rank',
 ]);
 
 export type QuestionType = z.infer<typeof QuestionTypeEnum>;
 
 // ============ COMBINED SCHEMA ============
-// Discriminated union that combines all question types
 export const CreateQuestionSchema = z.discriminatedUnion('type', [
-    TextQuestionSchema,
     TextareaQuestionSchema,
-    EmailQuestionSchema,
-    NumberQuestionSchema,
-    RatingQuestionSchema,
     SingleChoiceQuestionSchema,
-    MultiChoiceQuestionSchema,
-    DateQuestionSchema,
+    MultipleChoiceQuestionSchema,
+    RatingStarQuestionSchema,
+    RatingScaleQuestionSchema,
     BooleanQuestionSchema,
+    OrderRankQuestionSchema,
 ]);
 
 // ============ UPDATE SCHEMA ============
@@ -56,22 +44,20 @@ export const UpdateQuestionSchema = z
 // ============ CONFIG VALIDATOR HELPER ============
 export const validateQuestionConfig = (type: QuestionType, config: any) => {
     switch (type) {
-        case 'text':
         case 'textarea':
-        case 'email':
-            return TextConfigSchema.safeParse(config);
-        case 'number':
-            return NumberConfigSchema.safeParse(config);
-        case 'rating':
-            return RatingConfigSchema.safeParse(config);
-        case 'single-choice':
+            return TextareaConfigSchema.safeParse(config);
+        case 'single_choice':
             return SingleChoiceConfigSchema.safeParse(config);
-        case 'multi-choice':
-            return MultiChoiceConfigSchema.safeParse(config);
-        case 'date':
-            return DateConfigSchema.safeParse(config);
+        case 'multiple_choice':
+            return MultipleChoiceConfigSchema.safeParse(config);
+        case 'rating_star':
+            return RatingStarConfigSchema.safeParse(config);
+        case 'rating_scale':
+            return RatingScaleConfigSchema.safeParse(config);
         case 'boolean':
             return BooleanConfigSchema.safeParse(config);
+        case 'order_rank':
+            return OrderRankConfigSchema.safeParse(config);
         default:
             return { success: false, error: { message: 'Invalid question type' } };
     }

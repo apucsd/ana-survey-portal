@@ -12,7 +12,7 @@ const createResponseIntoDB = async (payload: any) => {
     });
 
     if (!survey) throw new AppError(httpStatus.NOT_FOUND, 'Survey not found');
-    if (survey.status !== 'PUBLISHED') throw new AppError(httpStatus.BAD_REQUEST, 'Survey is not active');
+    if (survey.status !== 'PUBLISHED') throw new AppError(httpStatus.BAD_REQUEST, 'This survey is not published yet');
 
     // 2. Map Questions for O(1) lookup
     const questionMap = new Map(survey.questions.map((q) => [q.id, q]));
