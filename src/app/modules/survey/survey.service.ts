@@ -80,7 +80,20 @@ const closeSurveyIntoDB = async (id: string, userId: string) => {
     });
     return result;
 };
-const getPublishedSurveysForUserFromDB = async (query: Record<string, any>) => {
+const getPublishedSurveysForUserFromDB = async (userId: string, query: Record<string, any>) => {
+    const user = await prisma.user.findUnique({
+        where: {
+            id: userId,
+        },
+    });
+    if (!user) throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+
+    const myResponses = await prisma.response.findMany({
+        where: {
+            userId,
+        },
+    });
+
     const result = await new QueryBuilder(prisma.survey, { ...query, status: SurveyStatus.PUBLISHED })
         .search(['title', 'description'])
         .filter()
@@ -112,6 +125,7 @@ const getPublishedSurveysForUserFromDB = async (query: Record<string, any>) => {
             return {
                 ...rest,
                 totalParticipants: _count?.responses || 0,
+                isResponded: myResponses.some((response: any) => response.surveyId === survey.id),
             };
         }),
     };

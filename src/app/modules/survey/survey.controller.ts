@@ -46,7 +46,7 @@ const closeSurvey = catchAsync(async (req, res) => {
 });
 
 const getPublishedSurveysForUser = catchAsync(async (req, res) => {
-    const { data, meta } = await SurveyService.getPublishedSurveysForUserFromDB(req.query);
+    const { data, meta } = await SurveyService.getPublishedSurveysForUserFromDB(req.user.id, req.query);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
