@@ -204,7 +204,6 @@ const deleteSurveyIntoDB = async (id: string, userId: string) => {
 };
 
 const getSurveyStatsFromDB = async (surveyId: string, userId: string) => {
-    // 1. Verify survey ownership
     const survey = await prisma.survey.findUnique({
         where: { id: surveyId },
         include: {
@@ -217,119 +216,125 @@ const getSurveyStatsFromDB = async (surveyId: string, userId: string) => {
     });
 
     if (!survey) throw new AppError(httpStatus.NOT_FOUND, 'Survey not found');
-    if (survey.creator.id !== userId) {
-        throw new AppError(httpStatus.FORBIDDEN, 'You are not authorized to view stats for this survey');
-    }
+    if (survey.creator.id !== userId) throw new AppError(httpStatus.FORBIDDEN, 'Not authorized');
 
-    // 2. Get all responses with answers
     const responses = await prisma.response.findMany({
         where: { surveyId },
-        include: {
-            answers: true,
-        },
+        include: { answers: true },
     });
 
-    const totalResponseCount = responses.length;
-
-    // 3. Process stats per question
     const questionsStats = survey.questions.map((question) => {
-        const questionAnswers = responses
-            .map((r) => r.answers.find((a) => a.questionId === question.id))
-            .filter((a) => a !== undefined && a.value !== null && a.value !== '');
+        const answers = responses.map((r) => r.answers.find((a) => a.questionId === question.id)).filter(Boolean);
 
-        const answerCount = questionAnswers.length;
+        const answerCount = answers.length;
         const config = question.config as any;
 
-        let statsData: { label: string; count: number }[] = [];
+        let data: { label: string; count: number; percentage?: number }[] = [];
         let average: number | undefined;
         let recentAnswers: string[] | undefined;
 
-        // Process based on type
         switch (question.type) {
             case 'single_choice':
-            case 'boolean':
-                // Group by value
+            case 'boolean': {
                 const counts: Record<string, number> = {};
-                questionAnswers.forEach((a) => {
-                    const val = String(a?.value);
-                    counts[val] = (counts[val] || 0) + 1;
-                });
-                statsData = Object.entries(counts).map(([label, count]) => ({ label, count }));
-                break;
 
-            case 'multiple_choice':
-                // Value is array, count each item
-                const multiCounts: Record<string, number> = {};
-                questionAnswers.forEach((a) => {
-                    if (Array.isArray(a?.value)) {
-                        (a?.value as string[]).forEach((val) => {
-                            multiCounts[val] = (multiCounts[val] || 0) + 1;
+                answers.forEach((a) => {
+                    const val = a!.value;
+                    if (typeof val === 'string') {
+                        counts[val] = (counts[val] || 0) + 1;
+                    } else if (typeof val === 'boolean') {
+                        const s = String(val);
+                        counts[s] = (counts[s] || 0) + 1;
+                    }
+                });
+
+                data = (config.options || []).map((opt: any) => ({
+                    label: opt,
+                    count: counts[opt] || 0,
+                }));
+                break;
+            }
+
+            case 'multiple_choice': {
+                const counts: Record<string, number> = {};
+
+                answers.forEach((a) => {
+                    const vals = a!.value;
+                    if (Array.isArray(vals)) {
+                        vals.forEach((v) => {
+                            if (typeof v === 'string') {
+                                counts[v] = (counts[v] || 0) + 1;
+                            }
                         });
                     }
                 });
-                statsData = Object.entries(multiCounts).map(([label, count]) => ({ label, count }));
+
+                data = (config.options || []).map((opt: any) => ({
+                    label: opt,
+                    count: counts[opt] || 0,
+                }));
                 break;
+            }
 
             case 'rating_star':
-            case 'rating_scale':
-                // Group by number value + calculate average
-                const ratingCounts: Record<string, number> = {};
+            case 'rating_scale': {
+                const counts: Record<number, number> = {};
                 let sum = 0;
-                let validRatings = 0;
 
-                questionAnswers.forEach((a) => {
-                    const val = Number(a?.value);
-                    if (!isNaN(val)) {
-                        const label = String(val);
-                        ratingCounts[label] = (ratingCounts[label] || 0) + 1;
-                        sum += val;
-                        validRatings++;
+                answers.forEach((a) => {
+                    const score = a!.value;
+                    if (typeof score === 'number') {
+                        counts[score] = (counts[score] || 0) + 1;
+                        sum += score;
                     }
                 });
 
-                if (validRatings > 0) {
-                    average = Number((sum / validRatings).toFixed(1));
+                if (answerCount > 0) {
+                    average = Number((sum / answerCount).toFixed(1));
                 }
 
-                // Ensure all possible rating values exist in data (optional, but good for charts)
-                const min = config.min || (question.type === 'rating_star' ? 1 : 0);
-                const max = config.max || (question.type === 'rating_star' ? 5 : 10);
+                const min = config.min ?? (question.type === 'rating_star' ? 1 : 0);
+                const max = config.max ?? (question.type === 'rating_star' ? 5 : 10);
+
                 for (let i = min; i <= max; i++) {
-                    const label = String(i);
-                    if (!ratingCounts[label]) ratingCounts[label] = 0;
+                    data.push({
+                        label: String(i),
+                        count: counts[i] || 0,
+                    });
                 }
-
-                statsData = Object.entries(ratingCounts)
-                    .map(([label, count]) => ({ label, count }))
-                    .sort((a, b) => Number(a.label) - Number(b.label));
                 break;
+            }
 
-            case 'textarea':
-                // Just take recent 10 answers
-                recentAnswers = questionAnswers
+            case 'textarea': {
+                recentAnswers = answers
                     .slice(0, 10)
-                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                    .map((a) => String(a?.value))
-                    .filter((v) => typeof v === 'string' && v !== 'null' && v !== 'undefined');
+                    .map((a) => a!.value)
+                    .filter((v): v is string => typeof v === 'string');
                 break;
+            }
 
-            case 'order_rank':
-                // For ranking, let's count how many times an item was ranked #1 (index 0)
-                const rankCounts: Record<string, number> = {};
-                questionAnswers.forEach((a) => {
-                    if (Array.isArray(a?.value) && a?.value.length > 0) {
-                        const topChoice = String(a?.value[0]); // The item at first position
-                        rankCounts[topChoice] = (rankCounts[topChoice] || 0) + 1;
+            case 'order_rank': {
+                const counts: Record<string, number> = {};
+
+                answers.forEach((a) => {
+                    const ordered = a!.value;
+                    if (Array.isArray(ordered) && ordered.length > 0) {
+                        const top = ordered[0] as string;
+                        counts[top] = (counts[top] || 0) + 1;
                     }
                 });
-                statsData = Object.entries(rankCounts).map(([label, count]) => ({ label, count }));
+
+                data = (config.options || []).map((opt: any) => ({
+                    label: opt,
+                    count: counts[opt] || 0,
+                }));
                 break;
+            }
         }
 
-        // Calculate percentages
-        const finalData = statsData.map((item) => ({
-            ...item,
-            percentage: totalResponseCount > 0 ? Number(((item.count / totalResponseCount) * 100).toFixed(1)) : 0,
+        const finalData = data.map((d) => ({
+            ...d,
+            percentage: answerCount > 0 ? Number(((d.count / answerCount) * 100).toFixed(1)) : 0,
         }));
 
         return {
@@ -337,14 +342,14 @@ const getSurveyStatsFromDB = async (surveyId: string, userId: string) => {
             title: question.title,
             type: question.type,
             responseCount: answerCount,
-            data: finalData,
             average,
             recentAnswers,
+            data: finalData,
         };
     });
 
     return {
-        totalResponseCount,
+        totalResponses: responses.length,
         questions: questionsStats,
     };
 };
