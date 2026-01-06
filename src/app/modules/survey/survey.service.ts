@@ -332,9 +332,11 @@ const getSurveyStatsFromDB = async (surveyId: string, userId: string) => {
             }
         }
 
+        const totalVotes = data.reduce((sum, d) => sum + d.count, 0);
+
         const finalData = data.map((d) => ({
             ...d,
-            percentage: answerCount > 0 ? Number(((d.count / answerCount) * 100).toFixed(1)) : 0,
+            percentage: totalVotes > 0 ? Number(((d.count / totalVotes) * 100).toFixed(1)) : 0,
         }));
 
         return {
