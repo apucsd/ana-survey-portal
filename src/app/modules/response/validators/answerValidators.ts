@@ -2,8 +2,6 @@ import { Question } from '@prisma/client';
 export const validateAnswer = (answer: any, question: Question): { valid: boolean; error?: string } => {
     const questionType = question.type;
     const config = question.config as any;
-
-    // Handle empty/null answers
     if (answer === null || answer === undefined || answer === '') {
         if (question.required) {
             return { valid: false, error: 'This question is required' };
@@ -60,10 +58,7 @@ const validateTextarea = (answer: any, config: any) => {
 };
 
 const validateSingleChoice = (answer: any, config: any) => {
-    // Answer should be a string (the selected value)
     if (typeof answer !== 'string') return { valid: false, error: 'Answer must be a selected option' };
-
-    // Extract valid values from config
     const options = config.options || [];
     const validValues = options.map((opt: any) => (typeof opt === 'string' ? opt : opt.value));
 

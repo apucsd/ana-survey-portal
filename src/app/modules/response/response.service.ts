@@ -14,6 +14,15 @@ const createResponseIntoDB = async (payload: any) => {
     if (!survey) throw new AppError(httpStatus.NOT_FOUND, 'Survey not found');
     if (survey.status !== 'PUBLISHED') throw new AppError(httpStatus.BAD_REQUEST, 'This survey is not published yet');
 
+    // prevent if already responded
+    const response = await prisma.response.findFirst({
+        where: {
+            surveyId: surveyId,
+            userId: payload.userId,
+        },
+    });
+    if (response) throw new AppError(httpStatus.BAD_REQUEST, 'You have already responded to this survey');
+
     // 2. Map Questions for O(1) lookup
     const questionMap = new Map(survey.questions.map((q) => [q.id, q]));
 

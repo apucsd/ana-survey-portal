@@ -93,6 +93,16 @@ const deleteSurvey = catchAsync(async (req, res) => {
         data: result,
     });
 });
+
+const getSurveyStats = catchAsync(async (req, res) => {
+    const result = await SurveyService.getSurveyStatsFromDB(req.params.id, req.user.id);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Survey statistics fetched successfully',
+        data: result,
+    });
+});
 export const SurveyController = {
     createSurvey,
     updateSurvey,
@@ -103,4 +113,5 @@ export const SurveyController = {
     deleteSurvey,
     getPublishedSurveysForUser,
     getSingleSurveyForUser,
+    getSurveyStats,
 };
