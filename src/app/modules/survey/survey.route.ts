@@ -16,6 +16,7 @@ router.post(
 router.get('/', auth(UserRoleEnum.USER), SurveyController.getPublishedSurveysForUser);
 
 router.get('/admin', auth(UserRoleEnum.SUPERADMIN), SurveyController.getAllSurveysForAdmin);
+router.get('/admin/:id/stats', auth(UserRoleEnum.SUPERADMIN), SurveyController.getSurveyStats);
 router.get('/:id', auth(UserRoleEnum.USER), SurveyController.getSingleSurveyForUser);
 router.get('/admin/:id', auth(UserRoleEnum.SUPERADMIN), SurveyController.getSingleSurveyForAdmin);
 router.patch(

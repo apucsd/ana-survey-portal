@@ -2,11 +2,22 @@ import { Question, QuestionStatus, SurveyStatus } from '@prisma/client';
 import { prisma } from '../../utils/prisma';
 import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
+import { CreateQuestionSchema, validateQuestionConfig } from './question.validation';
 
 const createQuestionIntoDB = async (payload: Question, userId: string) => {
+    // ============ VALIDATE QUESTION SCHEMA ============
+    const validationResult = CreateQuestionSchema.safeParse(payload);
+    if (!validationResult.success) {
+        const errorMessage = validationResult.error.errors.map((err) => err.message).join(', ');
+        throw new AppError(httpStatus.BAD_REQUEST, `Validation failed: ${errorMessage}`);
+    }
+
+    const validatedData = validationResult.data;
+
+    // ============ VERIFY SURVEY EXISTS AND USER IS AUTHORIZED ============
     const survey = await prisma.survey.findUnique({
         where: {
-            id: payload.surveyId,
+            id: validatedData.surveyId,
             status: {
                 not: 'DELETED',
             },
@@ -22,18 +33,19 @@ const createQuestionIntoDB = async (payload: Question, userId: string) => {
     if (survey.status === 'PUBLISHED' || survey.status === 'CLOSED')
         throw new AppError(httpStatus.BAD_REQUEST, 'Cannot add question to published or closed survey');
 
+    // ============ CHECK FOR EXISTING QUESTION ORDER ============
     const existingQuestion = await prisma.question.findFirst({
         where: {
-            surveyId: payload.surveyId,
-            order: payload.order,
+            surveyId: validatedData.surveyId,
+            order: validatedData.order,
         },
     });
     if (existingQuestion) {
         await prisma.question.updateMany({
             where: {
-                surveyId: payload.surveyId,
+                surveyId: validatedData.surveyId,
                 order: {
-                    gte: payload.order,
+                    gte: validatedData.order,
                 },
             },
             data: {
@@ -44,17 +56,17 @@ const createQuestionIntoDB = async (payload: Question, userId: string) => {
         });
     }
 
-    const { surveyId, ...questionData } = payload;
+    // ============ CREATE QUESTION ============
     const result = await prisma.question.create({
         data: {
-            type: questionData.type,
-            title: questionData.title,
-            required: questionData.required,
-            order: questionData.order,
-            config: questionData.config || {},
+            type: validatedData.type,
+            title: validatedData.title,
+            required: validatedData.required,
+            order: validatedData.order,
+            config: validatedData.config || {},
             survey: {
                 connect: {
-                    id: surveyId,
+                    id: validatedData.surveyId,
                 },
             },
         },
@@ -115,6 +127,17 @@ const updateQuestionIntoDB = async (userId: string, questionId: string, payload:
                     },
                     data: { order: { increment: 1 } },
                 });
+            }
+        }
+
+        // ============ VALIDATE CONFIG IF PROVIDED ============
+        if (payload.config !== undefined) {
+            const configValidation = validateQuestionConfig(question.type as any, payload.config);
+            if (!configValidation.success) {
+                const errorMessage =
+                    (configValidation.error as any)?.errors?.map((err: any) => err.message).join(', ') ||
+                    'Invalid config for question type';
+                throw new AppError(httpStatus.BAD_REQUEST, `Config validation failed: ${errorMessage}`);
             }
         }
 

@@ -1,0 +1,22 @@
+Ana Survey App
+
+
+steps:
+1. Create survey
+2. Add questions to survey
+3. User response (validate each questions type)
+4. store answers
+5. Generate report
+6. Share report
+
+
+
+Final Question Types (Recommended)
+
+1. single_choice
+2. multiple_choice
+3. textarea
+4. rating_star (1–5)
+5. rating_scale (0–10)
+6. boolean
+7. order_rank (drag & order)

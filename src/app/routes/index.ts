@@ -6,6 +6,7 @@ import { FaqRouters } from '../modules/faq/faq.route';
 import { InfoContentRouters } from '../modules/info-content/info-content.route';
 import { surveyRouters } from '../modules/survey/survey.route';
 import { QuestionRouters } from '../modules/question/question.route';
+import { ResponseRouters } from '../modules/response/response.route';
 
 const router = express.Router();
 
@@ -39,6 +40,10 @@ const moduleRoutes = [
     {
         path: '/info-contents',
         route: InfoContentRouters,
+    },
+    {
+        path: '/responses',
+        route: ResponseRouters,
     },
 ];
 

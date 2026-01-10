@@ -7,19 +7,9 @@ import { QuestionValidation } from './question.validation';
 
 const router = Router();
 
-router.post(
-    '/',
-    auth(UserRoleEnum.SUPERADMIN),
-    validateRequest.body(QuestionValidation.createQuestionZodSchema),
-    QuestionController.createQuestion
-);
+router.post('/', auth(UserRoleEnum.SUPERADMIN), QuestionController.createQuestion);
 
-router.patch(
-    '/:id',
-    auth(UserRoleEnum.SUPERADMIN),
-    validateRequest.body(QuestionValidation.updateQuestionZodSchema),
-    QuestionController.updateQuestion
-);
+router.patch('/:id', auth(UserRoleEnum.SUPERADMIN), QuestionController.updateQuestion);
 
 router.delete('/:id', auth(UserRoleEnum.SUPERADMIN), QuestionController.deleteQuestion);
 

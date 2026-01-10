@@ -5,7 +5,7 @@ model Question {
 
   type      String   
   title     String
-  required  Boolean  @default(false)  // Whether the question is required or not
+  required  Boolean  @default(false)  
   order     Int
 
   config    Json     // options, scale, min/max, etc.
